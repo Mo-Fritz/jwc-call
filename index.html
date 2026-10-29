@@ -38,15 +38,20 @@
     link.href = tel;
     link.textContent = 'Call ' + n;
     location.href = tel;
-    // Close this tab only once the phone app has taken focus. While Chrome's
-    // "Open ConnectUC?" prompt is showing, focus stays here, so the tab waits.
-    var waited = 0;
-    var timer = setInterval(function () {
-      waited += 500;
-      if (!document.hasFocus()) { clearInterval(timer); window.close(); return; }
-      if (waited === 3000) note.textContent = 'Didn’t open? Click the number above. You can close this tab.';
-      if (waited >= 120000) clearInterval(timer);
-    }, 500);
+    // First call in this browser: Chrome asks "Open ConnectUC?", so the tab must
+    // stay open until that's answered. Once "Always allow" is ticked there's no
+    // prompt, so later calls can close the tab on their own.
+    var seen = false;
+    try { seen = localStorage.getItem('jwcCallSeen') === '1'; localStorage.setItem('jwcCallSeen', '1'); } catch (e) {}
+    if (!seen) {
+      note.innerHTML = 'First call from this browser: tick <b>Always allow</b>, then click ' +
+        '<b>Open ConnectUC</b>.<br>After that, calls go straight through and this tab closes itself.';
+      return;
+    }
+    setTimeout(function () {
+      note.textContent = 'Didn’t open? Click the number above. You can close this tab.';
+      window.close();
+    }, 3000);
   })();
 </script>
 </body>
