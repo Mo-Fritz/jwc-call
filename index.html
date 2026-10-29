@@ -38,11 +38,15 @@
     link.href = tel;
     link.textContent = 'Call ' + n;
     location.href = tel;
-    // Done: close this tab. If the browser won't allow it, the link stays as a fallback.
-    setTimeout(function () {
-      note.textContent = 'Didn’t open? Click the number above. You can close this tab.';
-      window.close();
-    }, 1500);
+    // Close this tab only once the phone app has taken focus. While Chrome's
+    // "Open ConnectUC?" prompt is showing, focus stays here, so the tab waits.
+    var waited = 0;
+    var timer = setInterval(function () {
+      waited += 500;
+      if (!document.hasFocus()) { clearInterval(timer); window.close(); return; }
+      if (waited === 3000) note.textContent = 'Didn’t open? Click the number above. You can close this tab.';
+      if (waited >= 120000) clearInterval(timer);
+    }, 500);
   })();
 </script>
 </body>
